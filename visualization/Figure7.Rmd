@@ -1,0 +1,161 @@
+### Experiment 4 plots 
+
+#### Part I Comparing MS1 and MS2 quant for low picogram with standart DIA 
+
+```{r}
+library(tidyverse)
+library(ggprism)
+library(corrplot)
+
+myColors = c(
+  "#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"
+  )
+```
+
+```{r}
+sc_stats <- read.delim('data/Exp5/output/sc_stats.txt', sep = '\t', header=TRUE) %>% 
+                    mutate(CellType = factor(CellType, levels = c('HEK293', 'u937', 'Human')))
+mat <- read.csv('data/Exp5/output/correlation_matrix2.txt', sep = '\t', header=TRUE,dec = '.')[-1]
+df <- read.csv('data/Exp5/output/protein_matrix.txt', sep = '\t', header=TRUE)
+myClusters <- read.csv('data/Exp5/output/cluster_df.txt', sep = '\t', header=TRUE)
+proteins_genes <- read.csv('data/Exp5/output/Proteins_Genes.txt', sep = '\t', header=TRUE)
+
+hek_summary <- read.delim('data/Exp5/output/HEK_summary.txt', sep = '\t', header=TRUE)
+
+```
+
+```{r}
+
+sc_stats_summary <- sc_stats %>% group_by(CellType) %>% 
+                    summarise(Protein.Groups = round(mean(Protein.Groups, na.rm = T)),
+                              Peptides = round(mean(Peptides, na.rm = T))) %>% 
+                    mutate(CellType = factor(CellType, levels = c('HEK293', 'u937', 'Human')))
+
+#Showcase that wide window DIA does not work without FAIMS
+ggplot(sc_stats %>% filter(is.na(CellType) == FALSE), aes(y =  Peptides, fill = CellType, color = CellType, group = CellType))  +
+    geom_histogram(alpha = .7) +
+    geom_hline(data = sc_stats_summary, aes(yintercept = Peptides, color = CellType), size = 1, linetype ='dashed') +
+    facet_wrap(~CellType, nrow = 1, scale = 'free_y') +
+    scale_color_manual(values = myColors[c(1,2,6)]) +
+    scale_fill_manual(values = myColors[c(1,2,6)]) +
+    theme_prism() +
+    theme(legend.position = 'none') + 
+    scale_y_continuous(guide = "prism_offset_minor", limit = c(0,20000)) +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Cell type", y = "Peptides") 
+
+ggplot(sc_stats %>% filter(is.na(CellType) == FALSE), aes(y =  Protein.Groups, fill = CellType, color = CellType, group = CellType))  +
+    geom_histogram(alpha = .7) +
+    geom_hline(data = sc_stats_summary, aes(yintercept = Protein.Groups, color = CellType), size = 1, linetype ='dashed') +
+    facet_wrap(~CellType, nrow = 1, scale = 'free_y') +
+    scale_color_manual(values = myColors[c(1,2,6)]) +
+    scale_fill_manual(values = myColors[c(1,2,6)]) +
+    theme_prism() +
+    theme(legend.position = 'none') + 
+    scale_y_continuous(guide = "prism_offset_minor", limit = c(0,5000)) +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Cell type", y = "Protein Groups") 
+
+```
+
+
+```{r}
+
+ggplot(hek_summary %>% filter(QC_Pass == 'True'), aes(x = FSC.A, y = Intensity, color = Detected_Proteins)) + 
+        geom_point(size = 2, alpha = 0.7) +
+        scale_color_gradientn(colours = myColors) +
+        theme_prism() +
+      theme(legend.position = 'right') + 
+    scale_y_continuous(guide = "prism_offset_minor") +
+    scale_x_continuous(guide = "prism_offset_minor") +
+    labs(x = "FSC-A", y = "Median log2 (Intensity)") +
+    geom_smooth(method = 'lm', se = T, color  = myColors[2], size =1)
+
+```
+
+```{r}
+library(pheatmap)
+
+myColors <- c('#001219', '#005f73', '#0a9396', '#94d2bd', '#e9d8a6', '#ee9b00', '#ca6702', '#bb3e03','#ae2012', '#9b2226')
+
+breaksList = seq(-2.5, 4, by = 0.2)
+myColors2 <- colorRampPalette(myColors)(length(breaksList))
+
+corr_mat <- data.matrix(mat[-1,-1])
+prot_order = gsub('\\.', '-',gsub('__', ';', colnames(corr_mat)))
+
+colnames(corr_mat) <- prot_order
+rownames(corr_mat) <- prot_order
+corr_mat2 <- corr_mat; colnames(corr_mat2) <- NULL; rownames(corr_mat2) <- NULL
+
+pheatmap(corr_mat2, cluster_row = F, cluster_cols = F, color = myColors2, heigh = 6, width = 6.5,
+            treeheight_row = 0, treeheight_col = 0, filename = 'test.png')
+s
+#Adding cluster information 
+
+
+anno <- data.frame(Protein = prot_order) %>% 
+              left_join(myClusters %>% select(Cluster, Protein), by = c('Protein'))  %>% select(-Protein) %>% 
+              mutate(Cluster = paste('Cluster', Cluster, sep = '')) 
+
+rownames(anno) <- paste('P', 1:nrow(anno), sep = '')
+rownames(corr_mat2) <- paste('P', 1:nrow(anno), sep = '')
+
+ann_colors = list(
+  Cluster = c(Cluster0=myColors[1], 
+              Cluster1=myColors[2], 
+              Cluster2=myColors[3],
+              Cluster3=myColors[4],
+              Cluster4=myColors[5],
+              Cluster5=myColors[6],
+              Cluster6=myColors[7],
+              Cluster7=myColors[8]
+              )
+              )
+
+pheatmap(corr_mat2 , cluster_row = F, cluster_cols = F, heigh = 6, width = 7.5,
+            treeheight_row = 0, treeheight_col = 0, filename = 'test3.png', annotation_row=anno, color = myColors2, annotation_colors = ann_colors,
+            gaps_row = c(27,489,718,1156, 1325, 1422,1484), gaps_col = c(27,489,718,1156, 1325, 1422,1484))
+
+
+anno2 <- data.frame(Protein = prot_order) %>% 
+              left_join(myClusters %>% select(Cluster, Protein), by = c('Protein'))  %>%
+              left_join(proteins_genes, by = c('Protein' ='PG.ProteinGroups')) 
+
+
+corr_6_7 <- corr_mat[1:27,1:27]
+rnames <- anno2$PG.Genes[anno2$Protein %in% rownames(corr_6_7)]
+
+
+
+
+pheatmap(corr_6_7 , cluster_row = F, cluster_cols = F, heigh = 2, width = 2.3, labels_row = rnames, labels_col = rnames,
+            treeheight_row = 0, treeheight_col = 0, filename = 'test4.png', color = myColors2, fontsize =4, border_color = 'white')
+
+
+corr_3 <- corr_mat[1156:1324,1156:1324]
+rnames <- anno2$PG.Genes[anno2$Protein %in% rownames(corr_3)]
+rnames
+
+pheatmap(corr_3 , cluster_row = F, cluster_cols = F, heigh = 12, width = 13, labels_row = rnames, labels_col = rnames,
+            treeheight_row = 0, treeheight_col = 0, filename = 'test5.png', color = myColors2, border_color = 'white', fontsize=4)
+
+
+
+corr_3 <- corr_mat[1305:1325,1305:1325]
+rnames <- anno2$PG.Genes[anno2$Protein %in% rownames(corr_3)]
+rnames
+
+pheatmap(corr_3 , cluster_row = F, cluster_cols = F, heigh = 2, width = 2.3, labels_row = rnames, labels_col = rnames,
+            treeheight_row = 0, treeheight_col = 0, filename = 'test5_2.png', color = myColors2, border_color = 'white', fontsize=4.5)
+
+
+
+corr_6 <- corr_mat[28:489,28:489]
+rnames <- anno2$PG.Genes[anno2$Protein %in% rownames(corr_6)]
+rnames
+
+pheatmap(corr_6 , cluster_row = F, cluster_cols = F, heigh = 24, width = 26, labels_row = rnames, labels_col = rnames,
+            treeheight_row = 0, treeheight_col = 0, filename = 'test6.png', color = myColors2, border_color = 'white', fontsize=4)
+
+```

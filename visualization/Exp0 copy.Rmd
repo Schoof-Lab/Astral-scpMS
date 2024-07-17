@@ -1,0 +1,44 @@
+### Visualization of Exp0 data 
+
+```{r}
+library(tidyverse)
+library(ggprism)
+
+myColors = c(
+  "#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"
+  )
+```
+
+
+```{r}
+#Data
+sc <- read.delim('data/Exp5/sc_stats.csv', dec = ',') %>% 
+    mutate(CellType = case_when(grepl('scHEK', X) ~ 'HEK293',
+                                grepl('WT', X) ~ 'U937',
+                                grepl('CD34', X) ~ 'CD34'))
+
+```
+
+
+### Coverage
+```{r}
+
+sc_summary <- sc %>% group_by(CellType) %>% 
+                    summarise(Peptides = mean(Peptides),
+                              Protein.Groups = mean(Protein.Groups))  
+
+ggplot(sc, aes(x = CellType, y = Protein.Groups, color = CellType, fill = CellType)) +
+    geom_point()
+
+    geom_bar(data = coverage_summary, alpha = 0.5, stat = 'identity')  +
+    scale_fill_manual(values = myColors[c(2,8)]) +
+    scale_color_manual(values = myColors[c(2,8)]) +
+    scale_y_continuous(guide = "prism_offset") +
+    scale_x_discrete(guide = "prism_offset") +
+    theme_prism() +
+    theme(legend.position = "right", axis.text.x = element_text(angle=90)) +
+    labs(x = "Instrument", y = "Peptides")
+
+```
+
+```

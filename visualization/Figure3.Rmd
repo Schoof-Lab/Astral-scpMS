@@ -1,0 +1,199 @@
+### Visualization of Exp2 data 
+
+```{r}
+library(tidyverse)
+library(ggprism)
+
+myColors = c(
+  "#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"
+  )
+```
+
+
+```{r}
+coverage_ddm <- read.delim("data/Exp2/output/coverage_ddm.txt",sep = "\t", dec='.') %>% 
+                mutate(IT = factor(gsub('msIT', '', IT), levels = c('5', '10', '20', '30', '40', '50', '60')))
+
+
+ms1_250pg <- read.delim("data/Exp2/output/ms1_250pg.txt",sep = "\t", dec='.') %>% 
+            mutate(IT = factor(gsub('ms', '', IT), levels = c('100', '150', '200')))
+
+sc_method <- read.delim("data/Exp2/output/sc_method.txt",sep = "\t", dec='.') %>% 
+            mutate(MS2 = factor(gsub('ms', '', MS2), levels = c('40', '60')))
+
+error <- read.delim("data/Exp2/output/error.tsv",sep = "\t", dec='.') 
+
+error_l <- error %>% select(-X1000pg, -X120pg, -X250pg, -X500pg, -X750pg) %>% gather(key = "variable", value = "value", er_1000:er_120) %>%
+        mutate(variable = factor(variable, levels = c('er_1000', 'er_750', 'er_500', 'er_120')))
+
+diff <- read.delim("data/Exp2/output/error_difference.tsv",sep = "\t", dec='.') %>% 
+        mutate(variable = factor(variable, levels = c('diff_1000', 'diff_750', 'diff_500', 'diff_120')))
+
+```
+
+### Coverage
+```{r}
+coverage_ddm_summary <- coverage_ddm %>% group_by(Load, IT) %>% 
+                    summarise(Protein.Groups = round(mean(Protein.Groups)),
+                              Peptides = round(mean(Peptides)))
+
+
+ggplot(coverage_ddm, aes(x =  IT, y = Protein.Groups, color = Load, group = Load))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_bar(data = coverage_ddm_summary, stat = "identity", width = 0.5, alpha = 0.5, aes(fill = Load)) +
+    geom_text(data = coverage_ddm_summary, aes(label = Protein.Groups), vjust = 0.5, hjust = 1.5,size = 5, angle = 90, color = myColors[8], fontface = 'bold') +
+    scale_color_manual(values = myColors[c(8)]) +
+    scale_fill_manual(values = myColors[c(8)]) +
+    theme_prism() +
+    scale_y_continuous(guide = "prism_offset_minor") +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Protein Groups") +
+    theme(legend.position = "none")
+
+
+ggplot(coverage_ddm, aes(x =  IT, y = Peptides, color = Load, group = Load))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_bar(data = coverage_ddm_summary, stat = "identity", width = 0.5, alpha = 0.5, aes(fill = Load)) +
+    geom_text(data = coverage_ddm_summary, aes(label = Peptides), vjust = 0.5, hjust = 1.2,size = 5, angle = 90, color = myColors[2], fontface = 'bold') +
+    scale_color_manual(values = myColors[c(2)]) +
+    scale_fill_manual(values = myColors[c(2)]) +
+    theme_prism() +
+    scale_y_continuous(guide = "prism_offset_minor") +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Peptides") +
+    theme(legend.position = "none")
+
+```
+
+```{r}
+
+ms1_250pg_summary <- ms1_250pg %>% group_by(Load, IT) %>% 
+                    summarise(Protein.Groups = round(mean(Protein.Groups)),
+                              Peptides = round(mean(Peptides)))
+
+
+ggplot(ms1_250pg, aes(x =  IT, y = Protein.Groups, color = Load, group = Load))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_bar(data = ms1_250pg_summary, stat = "identity", width = 0.5, alpha = 0.5, aes(fill = Load)) +
+    geom_text(data = ms1_250pg_summary, aes(label = Protein.Groups), vjust = 0.5, hjust = 1.5,size = 5, angle = 90, color = myColors[3], fontface = 'bold') +
+    scale_color_manual(values = myColors[c(3)]) +
+    scale_fill_manual(values = myColors[c(3)]) +
+    theme_prism() +
+    facet_wrap(~Load, nrow = 1, scale = 'free_y') +
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(0,4200)) +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Protein Groups") +
+    theme(legend.position = "none") 
+
+
+ggplot(ms1_250pg, aes(x =  IT, y = Peptides, color = Load, group = Load))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_bar(data = ms1_250pg_summary, stat = "identity", width = 0.5, alpha = 0.5, aes(fill = Load)) +
+    geom_text(data = ms1_250pg_summary, aes(label = Peptides), vjust = 0.5, hjust = 1.5,size = 5, angle = 90, color = myColors[4], fontface = 'bold') +
+    scale_color_manual(values = myColors[c(4)]) +
+    scale_fill_manual(values = myColors[c(4)]) +
+    theme_prism() +
+    facet_wrap(~Load, nrow = 1, scale = 'free_y') +
+    scale_y_continuous(guide = "prism_offset_minor") +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Peptides") +
+    theme(legend.position = "none") 
+
+
+```
+
+
+```{r}
+
+
+sc_method_summary <- sc_method %>% group_by(MS1, MS2) %>% 
+                    summarise(Protein.Groups = round(mean(Protein.Groups)),
+                              Peptides = round(mean(Peptides)))
+
+
+ggplot(sc_method, aes(x =  MS2, y = Protein.Groups, color = MS2, group = MS2))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_line(size = 1, alpha = 0.8) +
+    geom_bar(data = sc_method_summary, stat = "identity", width = 0.5, alpha = 0.5, aes(fill = MS2)) +
+    geom_text(data = sc_method_summary, aes(label = Protein.Groups), vjust = 0.5, hjust = 1.5,size = 5, angle = 90, fontface = 'bold') +
+    scale_color_manual(values = myColors[c(3,7)]) +
+    scale_fill_manual(values = myColors[c(3,7)]) +
+    theme_prism() +
+    facet_wrap(~MS1, nrow = 1, scale = 'free_y') +
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(0,2400)) +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Protein Groups") +
+    theme(legend.position = "none") 
+
+
+ggplot(sc_method, aes(x =  MS2, y = Peptides, color = MS2, group = MS2))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_line(size = 1, alpha = 0.8) +
+    geom_bar(data = sc_method_summary, stat = "identity", width = 0.5, alpha = 0.5, aes(fill = MS2)) +
+    geom_text(data = sc_method_summary, aes(label = Peptides), vjust = 0.5, hjust = 1.5,size = 5, angle = 90, fontface = 'bold') +
+    scale_color_manual(values = myColors[c(3,7)]) +
+    scale_fill_manual(values = myColors[c(3,7)]) +
+    theme_prism() +
+    facet_wrap(~MS1, nrow = 1, scale = 'free_y') +
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(0,  10000)) +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Peptides") +
+    theme(legend.position = "none") 
+
+
+```
+
+
+```{r}
+ggplot(error_l %>%  filter(IT == '100ms'), aes(x=value, fill = variable)) + 
+        geom_histogram(aes(y = after_stat((count / sum(count)) * 100)), bins = 25, alpha = .8) +
+        facet_wrap(~variable, nrow = 1) +
+        theme_prism() +
+        scale_x_continuous(guide='prism_offset', limits = c(-100,100)) +
+        scale_y_continuous(guide = 'prism_offset_minor', limits = c(0,6)) +
+        scale_color_manual(values = myColors[c(2,3,4,8)]) +
+        scale_fill_manual(values = myColors[c(2, 3,4,8)]) +
+        theme(legend.position = "none", axis.text.x = element_text(angle = 90)) +
+        ylab('Frequency (%)') + xlab('Relative Error')
+
+ggplot(error_l %>%  filter(IT == '200ms'), aes(x=value, fill = variable)) + 
+        geom_histogram(aes(y = after_stat((count / sum(count)) * 100)), bins = 25, alpha = .8) +
+        facet_wrap(~variable, nrow = 1) +
+        theme_prism() +
+        scale_x_continuous(guide='prism_offset', limits = c(-100,100)) +
+        scale_y_continuous(guide = 'prism_offset_minor',limits = c(0,6)) +
+        scale_color_manual(values = myColors[c(2,3,4,8)]) +
+        scale_fill_manual(values = myColors[c(2, 3,4,8)]) +
+        theme(legend.position = "none", axis.text.x = element_text(angle = 90)) +
+        ylab('Frequency (%)') + xlab('Relative Error')
+
+
+error_l %>% group_by(IT, variable) %>% filter(value < 1000) %>% 
+    summarise(median(value), mean(value), mad(value)) %>% head(10)
+````
+
+
+```{r}
+
+error_labs <- error_l %>% group_by(IT, variable) %>% 
+    summarise(Bellow10 = round(sum(abs(value) < 10) / n(),2),
+              Bellow20 = round(sum(abs(value) < 20) / n(),2))
+
+
+ggplot(error_l, aes(x=abs(value), color = IT)) +
+  stat_ecdf( pad = FALSE, size = 1.5, alpha =.7) +
+  facet_wrap(~variable, nrow = 4, strip.position="right") +
+  theme_prism(border  =T) +
+  scale_x_continuous(guide='prism_offset', limits = c(0,200)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors[c(2,8)]) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  geom_text(x = 90, y = 0.3, aes(label = Bellow10), data = error_labs %>% filter(IT == '100ms'), color = myColors[2],size = 4, fontface = 'bold') +
+  geom_text(x = 90, y = 0.1, aes(label = Bellow10), data = error_labs %>% filter(IT == '200ms'), color = myColors[8], size = 4, fontface = 'bold') +
+  geom_text(x = 150, y = 0.3, aes(label = Bellow20), data = error_labs %>% filter(IT == '100ms'), color = myColors[2], size = 4, fontface = 'bold') +
+  geom_text(x = 150, y = 0.1, aes(label = Bellow20), data = error_labs %>% filter(IT == '200ms'), color = myColors[8], size = 4, fontface = 'bold') +
+  annotate('text', x = 90, y = 0.5, label = '<10%', color = myColors[1], size = 4, fontface = 'bold') +
+  annotate('text', x = 150, y = 0.5, label = '<20%', color = myColors[1], size = 4, fontface = 'bold') +
+  annotate("rect", xmin = 60, xmax = 175, ymin = 0.02, ymax = 0.7,alpha = .2)
+
+```

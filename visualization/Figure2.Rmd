@@ -1,0 +1,174 @@
+### Visualization of Exp1 data 
+
+```{r}
+library(tidyverse)
+library(ggprism)
+
+myColors = c(
+  "#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"
+  )
+```
+
+
+```{r}
+#Data
+
+coverage <- read.delim('data/Exp1/output/coverage.txt') %>% 
+            mutate(Window = factor(Window, levels = c('3p4mz', '6p8mz', '13p6mz', '27p2mz')),
+                   IT = factor(gsub('msIT', '', IT), levels=c('3', '6', '12', '24')),
+                   Method = factor(paste(Load, FAIMS, sep = '_'), 
+                                    levels = c('10ng_False', '1ng_False', '500pg_False', '250pg_False', '10ng_True', '1ng_True', '500pg_True', '250pg_True'))             )
+
+
+quant <- read.delim('data/Exp1/output/quant_df.txt') %>% 
+            mutate(IT = factor(gsub('msIT', '', IT), levels=c('3', '6', '12', '24')))
+
+full_data <- read.delim('data/Exp1/output/Exp1_full_data.txt') %>% 
+            mutate(IT = factor(gsub('msIT', '', IT), levels=c('3', '6', '12', '24')))
+```
+
+
+### Coverage
+```{r}
+#Showcase that wide window DIA does not work without FAIMS
+ggplot(coverage, aes(x =  IT, y = ProteinGroups_gain_FAIMS, color = Method, group = Method))  +
+    geom_jitter(size = 3, width = 0.1, height = 0.02, alpha = 0.6) +
+    geom_line(size = 1, alpha = 0.8) +
+    scale_color_manual(values = myColors[c(1:4,6:10)]) +
+    theme_prism() +
+     facet_wrap(~FAIMS, nrow = 1, scale = 'free_y') +
+    scale_y_continuous(guide = "prism_offset", limits=c(0,3.5)) +
+    scale_x_discrete(guide = "prism_offset") +
+    labs(x = "Injection time, ms", y = "Relative Increase") 
+```
+
+
+```{r}
+#Showcase 
+
+#Need to reformat the dataframe 
+
+coverage_rel <- coverage %>% group_by(IT, Load, FAIMS) %>% 
+                      summarise(Protein.Groups = mean(Protein.Groups)) %>% 
+                      ungroup() %>% group_by(IT, Load) %>% 
+                      mutate(Protein.Groups_diff = Protein.Groups - Protein.Groups[FAIMS == 'False']) %>% 
+                      mutate(Relative = 'No', IT = factor(gsub('msIT', '', IT), levels=c('3', '6', '12', '24')))
+#Making a temporary df 
+
+temp <- coverage_rel %>% filter(FAIMS == 'True') %>% select(IT, Load, FAIMS, Protein.Groups_diff) %>% mutate(Relative = 'Yes') %>%
+                    rename(Protein.Groups = Protein.Groups_diff)
+
+#Adding the difference to the other coverage df 
+
+coverage_rel2 <- bind_rows(coverage_rel, temp)
+
+#The plots
+theLoad = '10ng'
+ggplot(coverage_rel2, aes(x = IT, y = Protein.Groups_diff)) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'False', Load == theLoad), stat='identity', aes(y=-Protein.Groups), fill =myColors[2], color = myColors[2], alpha= 0.6) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'True', Load == theLoad), stat='identity', aes(y=Protein.Groups), fill =myColors[8], color = myColors[8], alpha= 0.6) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'True', Load == theLoad), aes(y=Protein.Groups), color = myColors[8], size = 4, alpha= 0.8, height=300, width=0.1) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'False', Load == theLoad), aes(y=-Protein.Groups), color = myColors[2], size = 4, alpha= 0.8, height=300, width=0.1) +
+    #facet_wrap(~Load, scale = 'free', nrow= 1) +
+    theme_prism() +
+    geom_hline(yintercept = 0, color = 'black', size = 1) + 
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(-6000, 6000)) +
+     scale_x_discrete(guide = "prism_offset")  +
+    ylab('Protein Groups') + xlab('Injection time, ms')
+
+
+theLoad = '1ng'
+ggplot(coverage_rel2, aes(x = IT, y = Protein.Groups_diff)) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'False', Load == theLoad), stat='identity', aes(y=-Protein.Groups), fill =myColors[2], color = myColors[2], alpha= 0.6) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'True', Load == theLoad), stat='identity', aes(y=Protein.Groups), fill =myColors[8], color = myColors[8], alpha= 0.6) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'True', Load == theLoad), aes(y=Protein.Groups), color = myColors[8], size = 4, alpha= 0.8, height=100, width=0.1) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'False', Load == theLoad), aes(y=-Protein.Groups), color = myColors[2], size = 4, alpha= 0.8, height=100, width=0.1) +
+    #facet_wrap(~Load, scale = 'free', nrow= 1) +
+    theme_prism() +
+    geom_hline(yintercept = 0, color = 'black', size = 1) + 
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(-4000, 4000))  +
+     scale_x_discrete(guide = "prism_offset")  +
+    ylab('Protein Groups') + xlab('Injection time, ms')
+
+
+theLoad = '500pg'
+ggplot(coverage_rel2, aes(x = IT, y = Protein.Groups_diff)) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'False', Load == theLoad), stat='identity', aes(y=-Protein.Groups), fill =myColors[2], color = myColors[2], alpha= 0.6) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'True', Load == theLoad), stat='identity', aes(y=Protein.Groups), fill =myColors[8], color = myColors[8], alpha= 0.6) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'True', Load == theLoad), aes(y=Protein.Groups), color = myColors[8], size = 4, alpha= 0.8, height=100, width=0.1) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'False', Load == theLoad), aes(y=-Protein.Groups), color = myColors[2], size = 4, alpha= 0.8, height=100, width=0.1) +
+    #facet_wrap(~Load, scale = 'free', nrow= 1) +
+    theme_prism() +
+    geom_hline(yintercept = 0, color = 'black', size = 1) + 
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(-3000, 3000))  +
+     scale_x_discrete(guide = "prism_offset")  +
+    ylab('Protein Groups') + xlab('Injection time, ms')
+
+
+theLoad = '250pg'
+ggplot(coverage_rel2, aes(x = IT, y = Protein.Groups_diff)) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'False', Load == theLoad), stat='identity', aes(y=-Protein.Groups), fill =myColors[2], color = myColors[2], alpha= 0.6) +
+    geom_bar(data = coverage_rel %>% filter(FAIMS == 'True', Load == theLoad), stat='identity', aes(y=Protein.Groups), fill =myColors[8], color = myColors[8], alpha= 0.6) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'True', Load == theLoad), aes(y=Protein.Groups), color = myColors[8], size = 4, alpha= 0.8, height=100, width=0.1) +
+    geom_jitter(data = coverage %>% filter(FAIMS == 'False', Load == theLoad), aes(y=-Protein.Groups), color = myColors[2], size = 4, alpha= 0.8, height=100, width=0.1) +
+    #facet_wrap(~Load, scale = 'free', nrow= 1) +
+    theme_prism() +
+    geom_hline(yintercept = 0, color = 'black', size = 1) + 
+    scale_y_continuous(guide = "prism_offset_minor", limits=c(-2500, 2500)) +
+    scale_x_discrete(guide = "prism_offset")  +
+    ylab('Protein Groups') + xlab('Injection time, ms')
+
+```
+
+### Precision
+
+```{r}
+#Make a column for peptides that are found in all the 32 methods
+
+found_in_all <- quant %>% group_by(PEP.GroupingKey) %>% 
+            count() %>% 
+            filter(n==32)
+
+quant <- quant %>% 
+            mutate(Found2 = PEP.GroupingKey %in% found_in_all$PEP.GroupingKey) 
+
+ggplot(quant %>% filter(Found2 == T, Load =='250pg'), aes(y = CV_MS1, x = IT, fill = FAIMS)) + 
+    geom_violin(alpha =.7, position=position_dodge()) +
+    geom_boxplot(width=0.2, alpha = 0.1,position = position_dodge(width =0.9)) +
+    facet_wrap(~Load, scale = 'free') +
+    theme_prism() +
+    scale_fill_manual(values = myColors[c(2,8)]) +
+    scale_y_continuous(guide = "prism_offset_minor", limits = c(0,0.3) ) +
+    scale_x_discrete(guide = "prism_offset")  + 
+    ylab('CV (MS1)') + xlab('Injection time, ms')
+
+ggplot(quant %>% filter(Found2 == T, Load =='250pg'), aes(y = CV_MS2, x = IT, fill = FAIMS)) + 
+    geom_violin(alpha =.7, position=position_dodge()) +
+    geom_boxplot(width=0.2, alpha = 0.1,position = position_dodge(width =0.9)) +
+    facet_wrap(~Load, scale = 'free') +
+    theme_prism() +
+    scale_fill_manual(values = myColors[c(2,8)]) +
+    scale_y_continuous(guide = "prism_offset_minor", limits = c(0,0.3) ) +
+    scale_x_discrete(guide = "prism_offset")  + 
+    ylab('CV (MS2)') + xlab('Injection time, ms')
+```
+
+```{r}
+full_rep2 <- full_data %>% filter(Replicate == '2') %>% 
+            mutate(Load = factor(Load, levels = c('10ng', '1ng', '500pg', '250pg')))
+
+
+ggplot(full_rep2, aes(y = ..density.., x = EG.DatapointsPerPeak, color = Load, fill = Load))  +
+        geom_histogram(alpha = 0.5, bins =20) + 
+        facet_grid(rows=vars(Load), cols=vars(FAIMS)) +
+        theme_prism() +
+        scale_fill_manual(values = myColors) +
+        scale_color_manual(values = myColors) +
+        scale_y_continuous(guide = "prism_offset_minor") +
+        scale_x_continuous(guide = "prism_offset", limits = c(0,20)) +
+        theme(legend.position = "none") +
+
+        ylab('Density') + xlab('Datapoints per peak (MS2)')
+
+full_rep2 %>% group_by(Load, FAIMS) %>% summarise(median(EG.DatapointsPerPeak))
+```

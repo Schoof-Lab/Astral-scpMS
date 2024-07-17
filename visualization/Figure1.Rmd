@@ -1,0 +1,79 @@
+### Visualization of Exp0 data 
+
+```{r}
+library(tidyverse)
+library(ggprism)
+library(rstatix)
+library(ggpubr)
+
+myColors = c(
+  "#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"
+  )
+```
+
+
+```{r}
+#Data
+rank <- read.delim('data/Exp0/output/rank.tsv')%>%  mutate(rank = dense_rank(desc(PEP.MS1Quantity)))
+coverage <- read.delim('data/Exp0/output/coverage.tsv') 
+cvs <- read.delim('data/Exp0/output/cvs.tsv') 
+
+
+coverage_summary
+```
+
+
+### Coverage
+```{r}
+
+coverage_summary <- coverage %>% group_by(Instrument) %>% 
+                    summarise(Peptides = mean(Peptides))
+
+ggplot(coverage, aes(x = Instrument, y = Peptides, color = Instrument, fill = Instrument)) + 
+    geom_jitter(width=0.1, size = 3) + 
+    geom_bar(data = coverage_summary, alpha = 0.5, stat = 'identity')  +
+    scale_fill_manual(values = myColors[c(2,8)]) +
+    scale_color_manual(values = myColors[c(2,8)]) +
+    scale_y_continuous(guide = "prism_offset") +
+    scale_x_discrete(guide = "prism_offset") +
+    theme_prism() +
+    theme(legend.position = "right", axis.text.x = element_text(angle=90)) +
+    labs(x = "Instrument", y = "Peptides")
+
+```
+
+### Precision
+
+```{r}
+ggplot(cvs, aes(x = Instrument, y = PEP.MS1Quantity, color = Instrument, fill = Instrument)) + 
+    geom_violin(alpha =.4, position=position_dodge()) + 
+    geom_boxplot(width=0.2, alpha = 0.1,position = position_dodge(width =0.9)) +
+    scale_fill_manual(values = myColors[c(2,8)]) +
+    scale_color_manual(values = myColors[c(2,8)]) +
+    scale_y_continuous(guide = "prism_offset_minor") +
+    scale_x_discrete(guide = "prism_offset") +
+    theme_prism() +
+    theme(legend.position = "none") +
+    labs(x = "Instrument", y = "CV")
+
+cvs %>% pairwise_t_test(PEP.MS1Quantity ~ Instrument, p.adjust.method = "bonferroni")
+```
+
+### Rank
+
+```{r}
+rank <- rank 
+
+ggplot(rank, aes(x = rank, y = log2(PEP.MS1Quantity), color = Found_Eclipse, fill = Found_Eclipse)) 
+
+ggplot(rank, aes(x = log2(PEP.MS1Quantity), color = Found_Eclipse, fill = Found_Eclipse)) +
+    geom_histogram(alpha = 0.4, position='dodge', bins = 50) +
+    scale_fill_manual(values = myColors[c(2,8)]) +
+    scale_color_manual(values = myColors[c(2,8)]) +
+    scale_y_continuous(guide = "prism_offset_minor") +
+    scale_x_continuous(guide = "prism_offset") +
+    theme_prism() +
+    theme(legend.position = 'left') +
+    labs(y = "Count", x = "Log2(Abundance)")
+
+```

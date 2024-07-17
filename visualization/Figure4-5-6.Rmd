@@ -1,0 +1,607 @@
+### Experiment 4 plots 
+
+#### Part I Comparing MS1 and MS2 quant for low picogram with standart DIA 
+
+```{r}
+library(tidyverse)
+library(ggprism)
+
+myColors = c(
+  "#001219", "#005f73", "#0a9396", "#94d2bd", "#e9d8a6", "#ee9b00", "#ca6702", "#bb3e03", "#ae2012", "#9b2226"
+  )
+```
+
+```{r}
+quant2 <- read.delim('data/Exp4/output/wishDIA_lowpg_quant_diann.txt', sep = '\t', header=TRUE)
+q_df <- read.delim('data/Exp4/output/direct_error_full.txt', sep = '\t', header=TRUE
+)
+library_id <- read.delim('data/Exp4/output/library_id.txt', sep = '\t', header=TRUE)
+library_quant <- read.delim('data/Exp4/output/library_quant.txt', sep = '\t', header=TRUE)
+
+head(quant)
+
+median(quant$er_100, na.rm = T)
+
+#Single-cell level signal 
+
+cvs <- read.delim('data/Exp4/output/cv_ms.txt', sep = '\t', header=TRUE) %>% 
+          mutate(Load = factor(Load, levels = c('100pg', '50pg', '40pg','30pg', '20pg', '10pg')))
+means <- read.delim('data/Exp4/output/mean_ms.txt', sep = '\t', header=TRUE) %>% 
+          mutate(Load = factor(Load, levels = c('100pg', '50pg', '40pg','30pg', '20pg', '10pg')))
+errors <- read.delim('data/Exp4/output/quant_ms1_rep.txt', sep = '\t', header=TRUE)
+```
+
+
+
+```{r}
+ggplot(data = q_df, aes(x=er_500) ) +
+   geom_histogram(data = q_df %>% filter(Type == 'MS2'), 
+            aes(y = ..density..), fill = myColors[1], color = myColors[1], alpha = 0.2, bins = 400, binwidth=4) +
+  geom_histogram(data = q_df %>% filter(Type == 'MS1'), 
+            aes(y = -..density..), fill = myColors[1], color = myColors[1], alpha = 0.3, bins = 400, binwidth=4) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), size = 1, color = myColors[1]) +
+  #geom_segment(aes(x=0, xend = 0, y = 0.02, yend = -0.02),linetype = "dashed", size = .6, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.024, 0.024)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  ggtitle('500')
+
+ggplot(data = q_df, aes(x=er_250) ) +
+   geom_histogram(data = q_df %>% filter(Type == 'MS2'), 
+            aes(y = ..density..), fill = myColors[2], color = myColors[2], alpha = 0.6, bins = 400, binwidth=4) +
+  geom_histogram(data = q_df %>% filter(Type == 'MS1'), 
+            aes(y = -..density..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=4) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), size = 1, color = myColors[1]) +
+  #geom_segment(aes(x=0, xend = 0, y = 0.02, yend = -0.02),linetype = "dashed", size = .6, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.024, 0.024)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  ggtitle('250') 
+
+ggplot(data = q_df, aes(x=er_200) ) +
+   geom_histogram(data = q_df %>% filter(Type == 'MS2'), 
+            aes(y = ..density..), fill = myColors[3], color = myColors[3], alpha = 0.6, bins = 400, binwidth=4) +
+  geom_histogram(data = q_df %>% filter(Type == 'MS1'), 
+            aes(y = -..density..), fill = myColors[3], color = myColors[3], alpha = 0.4, bins = 400, binwidth=4) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), size = 1, color = myColors[1]) +
+  #geom_segment(aes(x=0, xend = 0, y = 0.02, yend = -0.02),linetype = "dashed", size = .6, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.024, 0.024)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  ggtitle('200') 
+
+
+
+ggplot(data = q_df, aes(x=er_150) ) +
+   geom_histogram(data = q_df %>% filter(Type == 'MS2'), 
+            aes(y = ..density..), fill = myColors[4], color = myColors[4], alpha = 0.6, bins = 400, binwidth=4) +
+  geom_histogram(data = q_df %>% filter(Type == 'MS1'), 
+            aes(y = -..density..), fill = myColors[4], color = myColors[4], alpha = 0.4, bins = 400, binwidth=4) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), size = 1, color = myColors[1]) +
+  #geom_segment(aes(x=0, xend = 0, y = 0.02, yend = -0.02),linetype = "dashed", size = .6, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.024, 0.024)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  ggtitle('150') 
+
+
+ggplot(data = q_df, aes(x=er_100) ) +
+   geom_histogram(data = q_df %>% filter(Type == 'MS2'), 
+            aes(y = ..density..), fill = myColors[8], color = myColors[8], alpha = 0.6, bins = 400, binwidth=4) +
+  geom_histogram(data = q_df %>% filter(Type == 'MS1'), 
+            aes(y = -..density..), fill = myColors[8], color = myColors[8], alpha = 0.4, bins = 400, binwidth=4) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), size = 1, color = myColors[1]) +
+  #geom_segment(aes(x=0, xend = 0, y = 0.02, yend = -0.02),linetype = "dashed", size = .6, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.024, 0.024)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  ggtitle('100') 
+
+```
+
+
+```{r}
+ecdf_df <- q_df %>% select(Type, er_500, er_250, er_200, er_150, er_100) %>% 
+  gather(key = 'Load', value = 'Error', -Type) %>% 
+  mutate(Load = factor(Load, levels = c('er_500', 'er_250', 'er_200', 'er_150', 'er_100')))
+
+
+ecdf_df_anno <- ecdf_df %>% group_by(Type, Load) %>% 
+  summarise(High = round(sum(abs(Error) < 25) / n(),2),
+            Medium = round(sum(abs(Error) < 50) / n(),2)) %>% 
+            gather(key = 'Quality', value = 'Value', High:Medium)
+
+ecdf_df_anno['x'] =  c(rep(25, 10), rep(50, 10))
+ecdf_df_anno['ystart'] =  0
+ecdf_df_anno['xend'] =  100
+ecdf_df_anno['label_position_y'] = ecdf_df_anno$Value
+ecdf_df_anno$label_position_y[c(1,3,6,9)] = ecdf_df_anno$label_position_y[c(1,3,6,9)] - 0.02
+ecdf_df_anno$label_position_y[c(4,8)] = ecdf_df_anno$label_position_y[c(4,8)] + 0.02
+
+
+
+ggplot(ecdf_df %>% filter(Type == 'MS1'), aes(x=abs(Error), color = Load)) +
+  geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS1'), aes(x = x, y = ystart, xend = x, yend = Value, color = Load), linetype='dashed', size = 0.7) + # vertical segment
+  geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS1'), aes(x = x, y = Value, xend = 0, yend = Value, color = Load), linetype='dashed', size = 0.7) + # horizontal segment
+  stat_ecdf(pad = FALSE, size = 1.) +
+  theme_prism() +
+  facet_wrap(~Type, nrow=2) +
+  scale_x_continuous(guide='prism_offset', limits = c(0,100)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors[c(1,2,3,4,8)]) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  theme(legend.position = 'right') 
+  #geom_text(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS1'),aes(label = Value, x = xend-5, y = label_position_y), size = 5, fontface = 'bold') 
+
+ggplot(ecdf_df_anno %>% filter(Type == 'MS1', Quality == 'High'), aes(x= Load, y = Value, fill = Load, color = Load)) +
+      geom_bar(stat='identity', alpha = 0.5) +
+      theme_prism() +
+      scale_x_discrete(guide='prism_offset') +
+      scale_y_continuous(guide='prism_offset', limits = c(0,0.7)) +
+      scale_fill_manual(values = myColors[c(1,2,3,4,8)]) +
+      scale_color_manual(values = myColors[c(1,2,3,4,8)]) +
+      coord_flip() + 
+      geom_hline(yintercept = 0.5, linetype = 'dashed', size = 1, color = myColors[1]) +
+      theme(legend.position = 'none')
+
+ggplot(ecdf_df %>% filter(Type == 'MS2'), aes(x=abs(Error), color = Load)) +
+  geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'), aes(x = x, y = ystart, xend = x, yend = Value, color = Load), linetype='dashed', size = 1) + # vertical segment
+  geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'), aes(x = x, y = Value, xend = 0, yend = Value, color = Load), linetype='dashed', size = 1) + # horizontal segment
+  stat_ecdf(pad = FALSE, size = 1.) +
+  theme_prism() +
+  facet_wrap(~Type, nrow=2) +
+  scale_x_continuous(guide='prism_offset', limits = c(0,100)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors[c(1,2,3,4,8)]) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  theme(legend.position = 'right') 
+  #geom_text(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'),aes(label = Value, x = xend-5, y = label_position_y), size = 5, fontface = 'bold') 
+
+
+ggplot(ecdf_df_anno %>% filter(Type == 'MS2', Quality == 'High'), aes(x= Load, y = Value, fill = Load, color = Load)) +
+      geom_bar(stat='identity', alpha = 0.5) +
+      theme_prism() +
+      scale_x_discrete(guide='prism_offset') +
+      scale_y_continuous(guide='prism_offset', limits = c(0,0.7)) +
+      scale_fill_manual(values = myColors[c(1,2,3,4,8)]) +
+      scale_color_manual(values = myColors[c(1,2,3,4,8)]) +
+      coord_flip() + 
+      geom_hline(yintercept = 0.5, linetype = 'dashed', size = 1, color = myColors[1]) +
+      theme(legend.position = 'none')
+
+ecdf_df %>% group_by(Type, Load) %>% filter(abs(Error) < 2000) %>% 
+  summarise(mean(Error), sd(Error)) 
+
+
+```
+
+### Library 
+
+
+```{r}
+library_id <- library_id %>%
+          mutate(Library = case_when(
+            Type == 'direct' ~ '-',
+            Type == '50pg' ~ '1x',
+            Type == '100pg' ~ '2x',
+            Type == '150pg' ~ '3x',
+            Type == '200pg' ~ '4x',
+            Type == '250pg' ~ '5x',
+            Type == '500pg' ~ '10x',
+            Type == 'Full' ~ 'All'
+          )) %>% 
+
+          mutate(Library = factor(Library, levels = c('-', '1x', '2x', '3x', '4x', '5x', '10x', 'All'))) 
+
+min_avg = library_id %>% filter(Type == 'direct') %>% pull(Replicate) %>% mean() %>% round()
+
+library_id['Relative_increase'] = library_id$Replicate / min_avg
+
+library_id_summary <- library_id %>% group_by(Library) %>% 
+                      summarise(Replicate = round(mean(Replicate))) %>% 
+                      mutate(Library = factor(Library, levels = c('-', '1x', '2x', '3x', '4x', '5x', '10x', 'All')))
+
+ggplot(library_id, aes(x=Library, y = Replicate, fill = Library, color = Library)) +
+      geom_bar(data = library_id_summary, stat = 'identity', alpha = .8) +
+      geom_point() +
+      theme_prism() +
+      scale_fill_manual(values = myColors) +
+      scale_color_manual(values = myColors) +
+      theme(legend.position = 'none') +
+      scale_x_discrete(guide='prism_offset') +
+      scale_y_continuous(guide='prism_offset') +
+      xlab('Library') + ylab('Peptides') +
+      coord_flip()
+
+
+
+```
+
+
+```{r}
+library_quant <- library_quant%>%  mutate(Library = case_when(
+            limit == 'direct' ~ '-',
+            limit == '50pg' ~ '1x',
+            limit == '100pg' ~ '2x',
+            limit == '150pg' ~ '3x',
+            limit == '200pg' ~ '4x',
+            limit == '250pg' ~ '5x',
+            limit == '500pg' ~ '10x',
+            limit == "" ~ 'All'
+          )) %>%  mutate(Library = factor(Library, levels = c('-', '1x', '2x', '3x', '4x', '5x', '10x', 'All')))
+
+ggplot(library_quant, aes(x=abs(er_100), color = Library)) +
+  #geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'), aes(x = x, y = ystart, xend = x, yend = Value, color = Load), linetype='dashed', size = 1) + # vertical segment
+  #geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'), aes(x = x, y = Value, xend = xend-10, yend = Value, color = Load), linetype='dashed', size = 1) + # horizontal segment
+  stat_ecdf(pad = FALSE, size = 1.) +
+  theme_prism() +
+  facet_wrap(~Level, nrow=2) + 
+  scale_x_continuous(guide='prism_offset', limits = c(0,100)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  theme(legend.position = 'right') #+
+  geom_text(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'),aes(label = Value, x = xend-5, y = label_position_y), size = 5, fontface = 'bold') 
+
+
+ggplot(library_quant %>% filter(limit %in% c('direct', '50pg', '100pg')), aes(x=abs(er_100), color = limit, linetype=Level)) +
+  #geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'), aes(x = x, y = ystart, xend = x, yend = Value, color = Load), linetype='dashed', size = 1) + # vertical segment
+  #geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'), aes(x = x, y = Value, xend = xend-10, yend = Value, color = Load), linetype='dashed', size = 1) + # horizontal segment
+  stat_ecdf(pad = FALSE, size = 1.) +
+  theme_prism() +
+  scale_x_continuous(guide='prism_offset', limits = c(0,100)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  theme(legend.position = 'right') #+
+  geom_text(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS2'),aes(label = Value, x = xend-5, y = label_position_y), size = 5, fontface = 'bold') 
+
+
+
+  
+library_id_anno <- library_quant %>% 
+      select(Level, PEP.GroupingKey, er_500:er_100, direct,limit) %>% 
+      gather(key = 'Error', value = 'Value', er_500:er_100) %>% 
+      group_by(Level, Error, limit) %>%
+  summarise(High = round(sum(abs(Value) < 25) / n(),2),
+            Medium = round(sum(abs(Value) < 50 & abs(Value)  > 25) / n(),2), 
+            Low = round(sum(abs(Value) > 50) / n(),2)) %>% 
+            gather(key = 'Quality', value = 'Value', High:Low) %>%
+          mutate(Library = case_when(
+            limit == 'direct' ~ '-',
+            limit == '50pg' ~ '1x',
+            limit == '100pg' ~ '2x',
+            limit == '150pg' ~ '3x',
+            limit == '200pg' ~ '4x',
+            limit == '250pg' ~ '5x',
+            limit == '500pg' ~ '10x',
+            limit == "" ~ 'All'
+          )) %>% 
+
+          mutate(Library = factor(Library, levels = c('-', '1x', '2x', '3x', '4x', '5x', '10x', 'All')),
+                Quality = factor(Quality, levels=c('Low', 'Medium', 'High'))) %>% 
+          mutate(Error = factor(case_when(
+            Error == 'er_500' ~ '1:10',
+            Error == 'er_250' ~ '1:5',
+            Error == 'er_200' ~ '1:4',
+            Error == 'er_150' ~ '1:3',
+            Error == 'er_100' ~ '1:2'
+          ), levels = c('1:2', '1:3', '1:4', '1:5', '1:10')))
+
+ggplot(library_id_anno, aes(x= Library, y = Value, fill = Quality, label=Value)) +
+      geom_bar(stat='identity', alpha = 0.9) +
+      theme_prism() +
+      scale_x_discrete(guide='prism_offset') +
+      scale_y_continuous(guide='prism_offset', limits = c(0,1.1)) +
+      scale_fill_manual(values = myColors[c(2,4,8)]) +
+      scale_color_manual(values = myColors[c(2,4,8)]) +
+      coord_flip() + 
+      facet_wrap(~Level) +
+      geom_hline(yintercept = 0.7, linetype = 'dashed', size = 1, color = myColors[1]) +
+      geom_hline(yintercept = 0.4, linetype = 'dashed', size = 1, color = myColors[2]) +
+      #theme(legend.position = 'none') + 
+      ggtitle('MS1')
+
+ggplot(library_id_anno %>% filter(Quality == 'High'), aes(x = Error, y = Library, fill = Value)) + 
+    geom_tile(alpha = 0.9) +
+    facet_wrap(~Level) +
+    theme_prism(border=T,  base_rect_size = 2) +
+    geom_text(aes(label=Value), color = 'black', fontface = 'bold') +
+    scale_fill_gradient2(low = "#ffffff", mid = "#ffffff", high = "#9b2226", midpoint = 0.2) +
+    xlab('Ratio')
+
+
+ggplot(library_id_anno %>% filter(Quality == 'Medium'), aes(x = Error, y = Library, fill = Value)) + 
+    geom_tile(alpha = 0.6) +
+    facet_wrap(~Level) +
+    theme_prism(border=T,  base_rect_size = 2) +
+    geom_text(aes(label=Value), color = 'black', fontface = 'bold') +
+    scale_fill_gradient2(low = "#ffffff", mid = "#ffffff", high = "#ca6702", midpoint = 0.2) +
+    xlab('Ratio')
+
+ggplot(library_id_anno %>% filter(Quality == 'Low'), aes(x = Error, y = Library, fill = Value)) + 
+    geom_tile(alpha = 0.6) +
+    facet_wrap(~Level) +
+    theme_prism(border=T,  base_rect_size = 2) +
+    geom_text(aes(label=Value), color = 'black', fontface = 'bold') +
+    scale_fill_gradient2(low = "#ffffff", mid = "#ffffff", high = "#005f73", midpoint = 0.2) +
+    xlab('Ratio')
+```
+### Single-cell level 
+
+
+```{r}
+
+cvs_summary <- cvs %>% group_by(Load, Level) %>% 
+        summarise(q95 = quantile(PEP.Quantity, .95), 
+        q5 = quantile(PEP.Quantity, .05), 
+        PEP.Quantity = median(PEP.Quantity)) 
+
+ggplot(cvs, aes(x=Load, y = PEP.Quantity, fill = Load, color = Load)) +
+  geom_violin(alpha =.4, position=position_dodge(), color = NA) +
+  #geom_boxplot(width=0.4, alpha = 0.1,position = position_dodge(width =0.9)) +
+  geom_pointrange(data = cvs_summary, aes(ymin = q5, ymax = q95), color = myColors[9], alpha = 0.8) +
+  geom_text(data = cvs_summary,aes(label = round(PEP.Quantity,2)), vjust=-12, fontface= 'bold') +
+  theme_prism() +
+  facet_wrap(~Level) +
+  scale_x_discrete(guide='prism_offset') +
+  scale_y_continuous(guide='prism_offset', limits=c(0,0.5)) +
+  scale_fill_manual(values = myColors) +
+  scale_color_manual(values = myColors) +
+  ylab('CV') + xlab('Input')
+
+means_summary <- means %>% group_by(Load, Level) %>% 
+        summarise(q95 = quantile(PEP.Quantity, .95), 
+        q5 = quantile(PEP.Quantity, .05), 
+        PEP.Quantity = median(PEP.Quantity)) 
+
+means_summary
+
+ggplot(means, aes(x=Load, y = PEP.Quantity, fill = Load, color = Load)) +
+  geom_violin(alpha =.4, position=position_dodge(), color = NA) +
+  #geom_boxplot(width=0.4, alpha = 0.1,position = position_dodge(width =0.9)) +
+  geom_pointrange(data = means_summary, aes(ymin = q5, ymax = q95), color = myColors[2], alpha = 0.8) +
+  geom_text(data = means_summary,aes(label = round(PEP.Quantity,2)), vjust=-5, fontface= 'bold') +
+  theme_prism() +
+  facet_wrap(~Level) +
+  scale_x_discrete(guide='prism_offset') +
+  scale_y_continuous(guide='prism_offset') +
+  scale_fill_manual(values = myColors) +
+  scale_color_manual(values = myColors) +
+  ylab('log2(Abundance)') + xlab('Input')
+  
+
+error_df <- errors %>% select(er_50, er_40, er_30, er_20, er_10, er_20_40, er_10_20, Replicate, PEP.GroupingKey) %>% 
+  gather(key = 'Comparison', value = 'Error', er_50:er_10_20) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('er_50', 'er_40', 'er_30', 'er_20', 'er_10', 'er_20_40', 'er_10_20')))
+
+
+ggplot(error_df %>% filter(Replicate == '2', !(Comparison %in% c('er_20_40', 'er_10_20'))), aes(x=abs(Error), color = Comparison)) +
+  #geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS1'), aes(x = x, y = ystart, xend = x, yend = Value, color = Load), linetype='dashed', size = 0.7) + # vertical segment
+  #geom_segment(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS1'), aes(x = x, y = Value, xend = 0, yend = Value, color = Load), linetype='dashed', size = 0.7) + # horizontal segment
+  stat_ecdf(pad = FALSE, size = 1) +
+  theme_prism() +
+  #facet_wrap(~Comparison, nrow=2) +
+  scale_x_continuous(guide='prism_offset', limits = c(0,100)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  theme(legend.position = 'right') 
+  #geom_text(data = ecdf_df_anno %>% filter(Quality == 'High', Type == 'MS1'),aes(label = Value, x = xend-5, y = label_position_y), size = 5, fontface = 'bold') 
+
+
+error_df %>% group_by(Comparison, Replicate) %>% filter(abs(Error) < 500) %>% summarise(avg  = mean(Error), std = sd(Error) * 2.355) %>% 
+      summarise(avg = mean(avg), fwhm = mean(std), er = sd(std)) 
+
+
+ggplot(data = error_df %>% filter(!(Comparison %in% c('er_20_40', 'er_10_20')), Replicate == '2') , aes(x=Error, fill = Comparison, color = Comparison)) +
+  geom_histogram(aes(y=..density..), alpha = 0.4, bins = 400, binwidth=2) +
+  facet_wrap(~Comparison, ncol=5) +
+  xlab("Relative error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset') +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  scale_color_manual(values = myColors) +
+  scale_fill_manual(values = myColors) +
+  theme(legend.position = 'none') 
+
+
+ggplot(data = error_df %>% filter(Comparison %in% c('er_20_40', 'er_10_20'), Replicate == '2') , aes(x=Error, fill = Comparison, color = Comparison)) +
+  geom_histogram(aes(y=..density..), alpha = 0.4, bins = 400, binwidth=2) +
+  facet_wrap(~Comparison, ncol=5) +
+  xlab("Relative error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset') +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  scale_color_manual(values = myColors) +
+  scale_fill_manual(values = myColors) +
+  theme(legend.position = 'none') 
+
+
+
+```
+
+```{r}
+
+ggplot(data = quant2, aes(x=er_100) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS2'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = -..density..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), linewidth = 0.5, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset_minor', limits = c(-0.04, 0.04)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  ggtitle('100')
+
+
+ggplot(data = quant2, aes(x=er_40) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS2'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = -..density..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), linewidth = 0.5, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.07, 0.07)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  ggtitle('40')
+
+ggplot(data = quant2, aes(x=er_30) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS2'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = -..density..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), linewidth = 0.5, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.04, 0.04)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  ggtitle('30')
+
+
+ggplot(data = quant2, aes(x=er_20) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS2'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = -..density..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), linewidth = 0.5, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.04, 0.04)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  ggtitle('20')
+
+
+ggplot(data = quant2, aes(x=er_10_20) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS2'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = -..density..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), linewidth = 0.5, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-0.02, 0.02)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  ggtitle('10')
+  
+ggplot(data = quant2, aes(x=er_100) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS2'), 
+            aes(y = ..count..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = -..count..), fill = myColors[2], color = myColors[2], alpha = 0.4, bins = 400, binwidth=2) +
+  geom_segment(aes(x=-200, xend = 200, y = 0.0, yend = -0.0), linewidth = 0.5, color = myColors[1]) +
+  xlab("Error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset', limits = c(-250, 250)) +
+  scale_x_continuous(guide='prism_offset', limits = c(-300,300)) +
+  ggtitle('10')
+
+```
+
+
+```{r}
+quant3 <- quant2 %>% select(Precursor.Id, Level, er_100:er_10) %>% 
+              gather(key = 'Comparison', value ='Error', er_100:er_10) %>% 
+              mutate(Comparison = factor(Comparison, levels = c('er_100', 'er_40', 'er_30', 'er_20', 'er_10')))
+
+ggplot(data = quant3 %>% filter(Level == 'MS1', Comparison != 'er_40') , aes(x=Error, fill = Comparison, color = Comparison)) +
+  geom_histogram(aes(y=..density..), alpha = 0.4, bins = 400, binwidth=2) +
+  facet_wrap(~Comparison, ncol=2) +
+  xlab("Relative error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset') +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  scale_color_manual(values = myColors[c(1,3,6,8)]) +
+  scale_fill_manual(values = myColors[c(1,3,6,8)]) +
+  theme(legend.position = 'none') 
+
+ggplot(data = quant3 %>% filter(Level == 'MS2', Comparison != 'er_40') , aes(x=Error, fill = Comparison, color = Comparison)) +
+  geom_histogram(aes(y=..density..), alpha = 0.4, bins = 400, binwidth=2) +
+  facet_wrap(~Comparison, ncol=1) +
+  xlab("Relative error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset') +
+  scale_x_continuous(guide='prism_offset', limits = c(-00,200)) +
+  scale_color_manual(values = myColors[c(1,3,6,8)]) +
+  scale_fill_manual(values = myColors[c(1,3,6,8)]) +
+  theme(legend.position = 'none') 
+
+quant3_summary <- quant3 %>% group_by(Level, Comparison) %>% 
+    summarise(Bellow10 = round(sum(abs(Error) < 10) / n(),2),
+              Bellow20 = round(sum(abs(Error) < 20) / n(),2),
+              median = median(Error),
+              std = sd(Error),
+              MAD = mad(Error)) %>% 
+    filter(Level == 'MS1') %>% 
+    mutate(x = c(65), y = c(0.5,0.4,0.4,0.3,0.2))
+  
+```
+
+
+```{r}
+
+#gather the error in long format
+
+quant_long <- quant2 %>% select(Level, er_10, er_20, er_30, er_40, er_100) %>% 
+  gather(key = 'Error', value = 'Value', -Level) %>% 
+              mutate(Error = factor(Error, levels = c('er_100', 'er_40', 'er_30', 'er_20', 'er_10')))
+
+ggplot(quant_long %>% filter(Level != 'MS2', Error != 'er_40'), aes(x=abs(Value), color = Error)) +
+  stat_ecdf( pad = FALSE, size = 1.5) +
+  xlim(c(0,200)) +
+  theme_prism() +
+  scale_x_continuous(guide='prism_offset', limits = c(0,100)) +
+  scale_y_continuous(guide='prism_offset') +
+  scale_color_manual(values = myColors[c(1,3,6,8)]) +
+  xlab('Absolute Error') + ylab('Probability (Error < x)') +
+  geom_text(aes(label = Bellow10, x =x, y=y, color =Comparison), data = quant3_summary %>% filter(Comparison != 'er_40'),size = 4, fontface = 'bold') +
+  geom_text(aes(label = Bellow20, x =x + 15, y=y, color =Comparison), data = quant3_summary %>% filter(Comparison != 'er_40'),size = 4, fontface = 'bold') +
+  annotate('text', x = 65, y = 0.6, label = '<10%', color = myColors[1], size = 4, fontface = 'bold') +
+  annotate('text', x = 80, y = 0.6, label = '<20%', color = myColors[1], size = 4, fontface = 'bold') +
+  annotate("rect", xmin = 55, xmax = 90, ymin = 0.1, ymax = 0.7,alpha = 0.1) +
+  theme(legend.position = 'top' )
+
+```
+
+###  Special case for 10 vs 20 pg
+```{r}
+quant2 <- quant2 %>% 
+          mutate(er_20_10 = ((2 - (X20pg/X10pg))/(X20pg/X10pg))*100, 
+                er_30_10 = ((3 - (X30pg/X10pg))/(X30pg/X10pg))*100) 
+
+
+ggplot(data = quant2, aes(x=er_20_10) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=4) +
+
+    xlab("Relative error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset') +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  scale_color_manual(values = myColors[c(1,3,6,8)]) +
+  scale_fill_manual(values = myColors[c(1,3,6,8)]) +
+  theme(legend.position = 'none') 
+
+
+ggplot(data = quant2, aes(x=er_30_10) ) +
+   geom_histogram(data = quant2 %>% filter(Level == 'MS1'), 
+            aes(y = ..density..), fill = myColors[10], color = myColors[10], alpha = 0.4, bins = 400, binwidth=4) +
+
+    xlab("Relative error") + ylab("Density")  +
+  theme_prism() +
+  scale_y_continuous(guide='prism_offset') +
+  scale_x_continuous(guide='prism_offset', limits = c(-150,150)) +
+  scale_color_manual(values = myColors[c(1,3,6,8)]) +
+  scale_fill_manual(values = myColors[c(1,3,6,8)]) +
+  theme(legend.position = 'none') 
+
+
+median(quant2$er_20_10)
+```
